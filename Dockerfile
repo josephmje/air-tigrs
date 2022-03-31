@@ -20,3 +20,6 @@ RUN cd /src/air-tigrs && \
 # Setting study config
 ENV DM_CONFIG=/src/air-tigrs/airtigrs/data/tests/test_config.yml
 ENV DM_SYSTEM=test
+
+WORKDIR /home/airflow
+ENTRYPOINT ["/bin/bash"]
