@@ -1,0 +1,30 @@
+### configuration of all run.sh scripts in TIGR lab server
+---
+XnatServer: http://somexnatserver
+XnatConvention: KCNI
+XnatPort: 80
+LogServer: someserver
+ServerLogDir: "somelogdir"
+
+Projects:
+  TEST: TEST_settings.yml
+
+SystemSettings:
+  test:
+    DatmanProjectsDir: "/data/"
+    DatmanAssetsDir: "/src/datman/assets/"
+    ConfigDir: "/src/config/"
+
+Paths:
+  # paths defined here are relative to the study specific folder
+  meta: metadata/
+  data: data/
+  nii:  data/nii/
+  bids: data/bids/
+  dicom: data/dicom/
+  zips: data/zips/
+  resources: data/RESOURCES/
+  qc:   qc/
+  std:  metadata/standards/
+  log:  logs/
+  task: task/

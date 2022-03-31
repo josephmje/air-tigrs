@@ -20,7 +20,11 @@ RUN cd /src/air-tigrs && \
     pip install --no-cache-dir .[all]
 
 # Setting study config
-ENV DM_CONFIG=/src/air-tigrs/airtigrs/data/tests/test_config.yml
+RUN mkdir -p /src/config
+COPY /src/air-tigrs/airtigrs/data/tests/test_config.yml /src/config/
+COPY /src/air-tigrs/airtigrs/data/tests/TEST_settings.yml /src/config/
+
+ENV DM_CONFIG=/src/config/test_config.yml
 ENV DM_SYSTEM=test
 
 WORKDIR /home/airflow
