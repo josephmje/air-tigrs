@@ -1,9 +1,11 @@
 FROM apache/airflow:2.2.4-python3.8
 
-USER airflow
+USER root
 
 RUN apt-get update && apt-get install --no-install-recommends -y \
     git
+
+USER airflow
 
 # Installing datman
 RUN git clone https://github.com/tigrlab/datman.git /src/datman && \
