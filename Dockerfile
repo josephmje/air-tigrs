@@ -1,39 +1,50 @@
-ARG AIRFLOW_BASE_IMAGE="2.2.1-python3.8"
-
-FROM apache/airflow:${AIRFLOW_BASE_IMAGE}
-
+FROM apache/airflow:2.2.4-python3.8
+LABEL maintainer="tigrlabcamh@gmail.com"
 
 USER root
+
 RUN apt-get update && apt-get install --no-install-recommends -y \
-	wget git gettext
-
-## Taken from the Datman Dockerfile
-RUN mkdir /.ssh && \
-	ln -s /.ssh /home/airflow/.ssh && \
-	chmod 777 /.ssh && \
-	ssh-keyscan github.com >> /.ssh/known_hosts && \
-	chmod 666 /.ssh/known_hosts
-
-## Set up volumes
-RUN mkdir -p /sources/{airflow,config,archive,dev} && \
-	chown -R airflow:0 /sources
+    git
 
 USER airflow
+
 WORKDIR /home/airflow
+ENV HOME="/home/airflow"
 
-ARG DATMAN_REPOSITORY="https://github.com/TIGRLab/datman.git"
-ARG DATMAN_BRANCH="master"
+RUN mkdir -p /home/airflow/code
 
-RUN cd $HOME && \
-	git clone --branch ${DATMAN_BRANCH} ${DATMAN_REPOSITORY} && \
-	cd datman && pip install --user .
+RUN pip install --upgrade pip
 
-ENV PATH="${PATH}:${HOME}/datman/bin"
-ENV DM_CONFIG=/config/main_config.yml
-ENV DM_SYSTEM=docker
+# Installing datman
+RUN cd /home/airflow/code && \
+    git clone https://github.com/tigrlab/datman.git && \
+    cd datman && \
+    pip install --no-cache-dir .[all]
 
-COPY . ./air-tigrs
-RUN	cd air-tigrs \
-	&& pip install --use-deprecated=legacy-resolver --user .[buildtest]
+ENV PATH="${PATH}:/home/airflow/code/datman/bin://home/airflow/code/datman/assets"
+
+# Installing air-tigrs
+COPY . /home/airflow/code/air-tigrs
+RUN cd /home/airflow/code/air-tigrs && \
+    pip install --no-cache-dir .[all]
+
+# Setting study config
+RUN mkdir -p /home/airflow/code/config
+COPY /home/airflow/code/air-tigrs/airtigrs/data/tests/test_config.yml /home/airflow/code/config/
+COPY /home/airflow/code/air-tigrs/airtigrs/data/tests/TEST_settings.yml /home/airflow/code/config/
+
+ENV DM_CONFIG=/home/airflow/code/config
+ENV DM_SYSTEM=test
 
 ENTRYPOINT ["/bin/bash"]
+
+ARG BUILD_DATE
+ARG VCS_REF
+
+LABEL org.label-schema.schema-version="1.0" \
+      org.label-schema.build-date=$BUILD_DATE \
+      org.label-schema.name="tigrlab/air-tigrs" \
+      org.label-schema.description="Orchestration of TIGRLab dataflow infrastructure" \
+      org.label-schema.url="https://imaging-genetics.camh.ca/air-tigrs/" \
+      org.label-schema.vcs-url="https://github.com/tigrlab/air-tigrs" \
+      org.label-schema.vcs-ref=$VCS_REF
